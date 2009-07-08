@@ -89,13 +89,14 @@ print STDERR << "EOF";
 
 This script copies your dir and optionally archives
 
-usage: backup.pl [-dac] [-f direcotry_path]
+usage: backup.pl [-dac] [-f direcotry_path] [-s site]
 
  -h 		  : help
  -d        	  : delete the directory and archive if they already exist
  -a        	  : archive created copy
  -c			  : create a full dir copy
  -f dir_path  : directory path to be backed up
+ -s site      : site, where the files are archived (e.g. home, work...)
 
 
 EOF
