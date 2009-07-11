@@ -2,16 +2,18 @@ use File::Copy;
 use File::Path;
 use Cwd qw/abs_path/;
 use Getopt::Std qw/getopts/;
+use Archive::Tar;
+use File::Find;
 
 %opts=();
-getopts('hdacf:', \%opts) or usage();
-#usage() if $opt{h};
-#usage() if !$opt{f};
+getopts('hdacf:s:', \%opts) or usage();
+usage() if $opt{h};
 
 my $start_dir = $opts{f};
 my $abs_dir_path = abs_path($start_dir);
-if ($abs_dir_path =~ /(.*)\//) {
+if ($abs_dir_path =~ /(.*)\/(.*)/) {
 	$abs_dir_path = $1;
+	$start_dir = $2;
 } else {
 	die "Didn't do anything because of problems with absolute directroy path resolution.\n";
 }
@@ -25,40 +27,48 @@ if ($opts{s}) {
 
 
 $path = "$abs_dir_path/$archive_filename";
-if (-d $path) {
-	if($opts{d}) {
-		print "Backup directory already exists.\n   Deleting...\n";
-		rmtree($path);
-	} else {
-		die "Backup directory already exists. Exiting.\n";
-	}
-}
-if (-f "$path.rar") {
-	if($opts{d}) {
-		print "Backup archive already exists.\n   Deleting...\n";
-		unlink("$path.rar");
-	} else {
-		die "Backup archive already exists. Exiting.\n";
-	}
-}
-if (!mkdir($path)) {
-	die "Error: couldn't create directory '$path'\n";
-}
+
 
 # here we copy the whole directory structure
 if ($opts{c}) {
+	print "Copying...\n";
+	if (-d $path) {
+		if($opts{d}) {
+			print "Backup directory already exists.\n   Deleting...\n";
+			rmtree($path);
+		} else {
+			die "Backup directory already exists. Exiting.\n";
+		}
+	}
+	if (!mkdir($path)) {
+		die "Error: couldn't create directory '$path'\n";
+	}
 	&traverse("$abs_dir_path/$start_dir");
+	print "Copying complete.\n";
 }
 
 # and archive it, if the user has so desired
 if ($opts{a}) {
-	use Archive::Rar;
-	my $rar =new Archive::Rar();
-	$rar->Add(
-			-archive => $archive_filename,
-			-files => $start_dir,
-			-verbose => 0
-	);
+	print "Archivation...\n";
+	if (-f "$path.tar") {
+		if($opts{d}) {
+			print "Backup archive already exists.\n   Deleting...\n";
+			unlink("$path.tar");
+		} else {
+			die "Backup archive already exists. Exiting.\n";
+		}
+	}
+
+	chdir $abs_dir_path or die "Can't change dir to $abs_dir_path: $!\n";
+	my @files;
+	find(sub {push @files,$File::Find::name},"$abs_dir_path/$start_dir");
+	if ( !Archive::Tar->create_archive( 
+            "$abs_dir_path/$archive_filename.tar",
+            5,
+            @files)) {
+		die "Archivation failed.\n";
+	}
+	print "Archivation complete.\n";
 }
  
 sub traverse() {
@@ -96,8 +106,7 @@ usage: backup.pl [-dac] [-f direcotry_path] [-s site]
  -a        	  : archive created copy
  -c			  : create a full dir copy
  -f dir_path  : directory path to be backed up
- -s site      : site, where the files are archived (e.g. home, work...)
-
+ -s site       : site where the backup is made
 
 EOF
 	exit;
