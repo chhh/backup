@@ -61,7 +61,8 @@ if ($opts{c}) {
 # and archive it, if the user has so desired
 if ($opts{a}) {
 	if ($archiveTarInstalled == 0) {
-		die "Sorry, perl module Archive::Tar (used by this script) is not installed. Finishing..."
+		print "Sorry, perl module Archive::Tar (used by this script) is not installed. Finishing...\n";
+		exit;
 	}
 	print "Archiving data...\n";
 	if (-f "$path.tar.gz") {
