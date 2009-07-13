@@ -3,7 +3,9 @@ use File::Find;
 use File::Path;
 use Cwd qw/abs_path cwd/;
 use Getopt::Std qw/getopts/;
-use Archive::Tar; 
+my $archiveTarInstalled = 1;
+eval("use Archive::Tar");
+$archiveTarInstalled = 0 if $@;
 
 %opts=();
 getopts('hdacf:s:', \%opts) or usage();
@@ -58,6 +60,9 @@ if ($opts{c}) {
 
 # and archive it, if the user has so desired
 if ($opts{a}) {
+	if ($archiveTarInstalled == 0) {
+		die "Sorry, perl module Archive::Tar (used by this script) is not installed. Finishing..."
+	}
 	print "Archiving data...\n";
 	if (-f "$path.tar.gz") {
 		if($opts{d}) {
