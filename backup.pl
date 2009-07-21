@@ -8,7 +8,7 @@ eval("use Archive::Tar");
 $archiveTarInstalled = 0 if $@;
 
 %opts=();
-getopts('hdacf:s:', \%opts) or usage();
+getopts('hdca:f:s:', \%opts) or usage();
 usage() if $opts{h};
 usage() if !length($opts{f});
 
@@ -60,6 +60,14 @@ if ($opts{c}) {
 
 # and archive it, if the user has so desired
 if ($opts{a}) {
+	my $compressionLevel = $opts{a};
+
+	if ($compressionLevel !~ /^(?:\d|)$/o) {
+		print "\nYou've specified compression: >>> ", $compressionLevel, " <<<\n";
+		print "Compression level should be a single number from 1 to 9\nDidn't archive. Exiting...\n";
+		exit 1;
+	}
+	
 	if ($archiveTarInstalled == 0) {
 		print "Sorry, perl module Archive::Tar (used by this script) is not installed. Finishing...\n";
 		exit;
@@ -78,7 +86,7 @@ if ($opts{a}) {
 	#chdir $abs_dir_path.'/'.$start_dir or die "Can't change dir to $abs_dir_path: $!\n";
 	chdir $abs_dir_path or die "Can't change dir to $abs_dir_path: $!\n";
 	find(sub {push @files,$File::Find::name}, $start_dir);
-	if (!Archive::Tar->create_archive("$abs_dir_path/$archive_filename.tar.gz",5,@files)) {
+	if (!Archive::Tar->create_archive("$abs_dir_path/$archive_filename.tar.gz",$compressionLevel,@files)) {
 		print "Archivation failed.\n";
 	}
 	print "Archivation complete.\n";
