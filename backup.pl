@@ -8,7 +8,7 @@ eval("use Archive::Tar");
 $archiveTarInstalled = 0 if $@;
 
 %opts=();
-getopts('hdca:f:s:', \%opts) or usage();
+getopts('hdca:f:s:n:', \%opts) or usage();
 usage() if $opts{h};
 usage() if !length($opts{f});
 
@@ -27,6 +27,9 @@ my $timestamp = sprintf "%4d-%02d-%02d__%02d-%02d", $year+1900,$mon+1,$mday,$hou
 my $archive_filename = $start_dir.'_['.$timestamp.']';
 if ($opts{s}) {
 	$archive_filename .= '_['.$opts{s}.']'
+}
+if ($opts{n}) {
+	$archive_filename .= '_['.$opts{n}.']'
 }
 
 # debug paths
@@ -128,9 +131,9 @@ print STDERR << "EOF";
 
 This script copies your dir and optionally archives it
 The format is: 
-              baseDirName_[yyyy-mm-dd__hh-mm]_[site]
+              baseDirName_[yyyy-mm-dd__hh-mm]_[site]_[additional notes]
 
-usage: backup.pl [-dac] [-f direcotry_path] [-s site]
+usage: backup.pl [-dac] [-f direcotry_path] [-s site] [-n notes]
 
  -h           : help
  -d           : delete the directory and archive if they already exist
@@ -138,6 +141,7 @@ usage: backup.pl [-dac] [-f direcotry_path] [-s site]
  -c           : create a full dir copy
  -f dir_path  : directory path to be backed up (better use absolute path)
  -s site      : site, where you're making the backup
+ -n notes : some additional info you may want to include in your backup name
 
 
 EOF
