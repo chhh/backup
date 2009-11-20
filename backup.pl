@@ -106,9 +106,9 @@ if ($opts{a}) {
 sub traverse() {
 	my $dir = shift;
 	opendir(DIR, $dir) || die "can't opendir '$dir': $!";
-    my @dirs = grep { !/^\./ && -d "$dir/$_" } readdir(DIR);
+    my @dirs = grep { !/^\.+$/ && -d "$dir/$_" } readdir(DIR);
 	rewinddir(DIR);
-	my @files = grep { !/^\./ && -f "$dir/$_" } readdir(DIR);
+	my @files = grep { !/^\.+$/ && -f "$dir/$_" } readdir(DIR);
 	closedir(DIR);
 	foreach my $file (@files) {
 		copy("$dir/$file", "$path/$file") or die "File\n   '$dir/$file' could not be copied to\n   $path/$file\nError: $!.";
